@@ -9,6 +9,7 @@ let blochSphere;
 let axes;
 let blochVector;
 let controls;
+let circuitQueue = [];
 
 function init() {
 
@@ -94,6 +95,7 @@ const thetaSlider = document.getElementById("theta-slider");
 const phiSlider = document.getElementById("phi-slider");
 const thetaValueDisplay = document.getElementById("theta-value");
 const phiValueDisplay = document.getElementById("phi-value");
+const circuitDisplay = document.getElementById("circuit-display");
 
 function updateDisplayedAngles() {
   thetaValueDisplay.textContent = thetaSlider.value + "°";
@@ -110,6 +112,11 @@ phiSlider.addEventListener("input", () => {
   updateDisplayedAngles();
 });
 
+circuitDisplay.addEventListener("input", () => {
+  circuitDisplay.dataset.editing = "true"; // jelzi, hogy manuális szerkesztés folyik
+});
+
+// Functions
 function updateBlochVector() {
   const theta = Number(thetaSlider.value);
   const phi = Number(phiSlider.value);
@@ -199,13 +206,187 @@ function applyHGate() {
   applyGateRotation(RH);
 }
 
+function applySGate() {
+  const angle = Math.PI / 2; // 90°
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+
+  const Rz = [
+    [ cos, -sin, 0 ],
+    [ sin,  cos, 0 ],
+    [  0,    0, 1 ]
+  ];
+
+  applyGateRotation(Rz);
+}
+
+function applyTGate() {
+  const angle = Math.PI / 4; // 45°
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+
+  const Rz = [
+    [ cos, -sin, 0 ],
+    [ sin,  cos, 0 ],
+    [  0,    0, 1 ]
+  ];
+
+  applyGateRotation(Rz);
+}
+
+function applyRxGate(angleDeg) {
+  const angle = angleDeg * Math.PI / 180; // fok → radián
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+
+  const Rx = [
+    [1,   0,    0],
+    [0, cos, -sin],
+    [0, sin,  cos]
+  ];
+
+  applyGateRotation(Rx);
+}
+
+function applyRyGate(angleDeg) {
+  const angle = angleDeg * Math.PI / 180;
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+
+  const Ry = [
+    [ cos, 0, sin],
+    [   0, 1,   0],
+    [-sin, 0, cos]
+  ];
+
+  applyGateRotation(Ry);
+}
+
+function applyRzGate(angleDeg) {
+  const angle = angleDeg * Math.PI / 180;
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+
+  const Rz = [
+    [ cos, -sin, 0],
+    [ sin,  cos, 0],
+    [   0,    0, 1]
+  ];
+
+  applyGateRotation(Rz);
+}
+
+function updateCircuitDisplay() {
+  const display = document.getElementById("circuit-display");
+  if (circuitQueue.length === 0) {
+    display.textContent = "(empty)";
+  } else {
+    // Ha a felhasználó manuálisan nem szerkeszt, írjuk ki
+    if (!display.isContentEditable || display.dataset.editing !== "true") {
+      display.textContent = circuitQueue
+        .map(g => g.gate + (g.angle ? `(${g.angle}°)` : ""))
+        .join(" → ");
+    }
+  }
+}
+
 document.querySelectorAll(".control-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     const text = btn.textContent;
 
-    if (text.includes("X Gate")) applyXGate();
-    else if (text.includes("Y Gate")) applyYGate();
-    else if (text.includes("Z Gate")) applyZGate();
-    else if (text.includes("Hadamard H Gate")) applyHGate();
+    let gateName = null;
+    let angle = 0;
+
+    if (text.includes("X Gate")) gateName = "X";
+    else if (text.includes("Y Gate")) gateName = "Y";
+    else if (text.includes("Z Gate")) gateName = "Z";
+    else if (text.includes("Hadamard H Gate")) gateName = "H";
+    else if (text.includes("S Gate")) gateName = "S";
+    else if (text.includes("T Gate")) gateName = "T";
+    else if (text.includes("Apply Rx")) {
+      gateName = "Rx";
+      angle = Number(document.getElementById("rx-angle").value);
+    }
+    else if (text.includes("Apply Ry")) {
+      gateName = "Ry";
+      angle = Number(document.getElementById("ry-angle").value);
+    }
+    else if (text.includes("Apply Rz")) {
+      gateName = "Rz";
+      angle = Number(document.getElementById("rz-angle").value);
+    }
+
+    if (gateName) {
+  // hozzáadjuk a circuitQueue-hoz
+  circuitQueue.push({ gate: gateName, angle: angle });
+  updateCircuitDisplay();
+
+  // Azonnal futtatjuk a kaput a gömb frissítéséhez
+  switch(gateName) {
+    case "X": applyXGate(); break;
+    case "Y": applyYGate(); break;
+    case "Z": applyZGate(); break;
+    case "H": applyHGate(); break;
+    case "S": applySGate(); break;
+    case "T": applyTGate(); break;
+    case "Rx": applyRxGate(angle); break;
+    case "Ry": applyRyGate(angle); break;
+    case "Rz": applyRzGate(angle); break;
+  }
+}
   });
 });
+
+document.getElementById("run-circuit").addEventListener("click", () => {
+  const displayText = circuitDisplay.textContent.trim();
+  let queueToRun = [];
+
+  if (displayText && displayText !== "(empty)" && circuitDisplay.dataset.editing === "true") {
+    // Manuális input parsing
+    const items = displayText.split("→").map(s => s.trim());
+    items.forEach(item => {
+      const match = item.match(/^([a-zA-Z]+)(\(([-+]?\d+(\.\d+)?)°\))?$/);
+      if (match) queueToRun.push({ gate: match[1], angle: match[3] ? Number(match[3]) : 0 });
+    });
+  } else {
+    // Ha nincs manuális input, a gombos queue
+    queueToRun = [...circuitQueue];
+  }
+
+  // Végrehajtás
+  for (const item of queueToRun) {
+    switch(item.gate) {
+      case "X": applyXGate(); break;
+      case "Y": applyYGate(); break;
+      case "Z": applyZGate(); break;
+      case "H": applyHGate(); break;
+      case "S": applySGate(); break;
+      case "T": applyTGate(); break;
+      case "Rx": applyRxGate(item.angle); break;
+      case "Ry": applyRyGate(item.angle); break;
+      case "Rz": applyRzGate(item.angle); break;
+    }
+  }
+
+  // Manuális szerkesztés után visszaállítjuk a jelzőt
+  circuitDisplay.dataset.editing = "false";
+  updateCircuitDisplay(); // frissítjük a divet a queue alapján
+});
+
+
+document.getElementById("reset-circuit").addEventListener("click", () => {
+  circuitQueue = [];
+  updateCircuitDisplay();
+});
+
+/*        CIRCUIT USAGE
+Használat
+Kattints a kapugombokra (X, Y, Z, H, S, T vagy Apply Rx/Ry/Rz) → a kapu bekerül a circuitQueue-ba és a #circuit-display-ben megjelenik.
+Több kaput is hozzáadhatsz egymás után, pl. H → X → Ry(45°).
+Run Circuit → a sorban lévő kapuk egymás után végrehajtódnak, a Bloch-vektor frissül a végállapotra.
+Reset Circuit → törli a kapusort.
+
+A Circuit azt is kiírja, hogy milyen kapuk lettek eddig hozzáadva.
+
+*/
+
