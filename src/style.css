@@ -1,0 +1,80 @@
+header {
+  margin: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 500;
+  z-index: 10;
+  position: relative;
+}
+body {
+  background: linear-gradient(145deg, #090909, #141414);
+  margin: 0;
+  color:cadetblue;
+  font-family:Arial, Helvetica, sans-serif;
+}
+.layout {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;       /* teljes viewport */
+
+}
+
+/* LEFT SIDEBAR */
+.sidebar {
+  width: 300px;               /* kicsit szélesebb, hogy a gombok elférjenek */
+  min-width: 250px;           /* ne legyen túl szűk, responsive */
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.08); 
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 10;
+
+  /* háttér kitöltése a teljes layout magasságra */
+  min-height: 100vh;
+
+  overflow-y: auto;         /* görgetés, ha tartalom hosszabb */
+  box-sizing: border-box;
+}
+.control-btn {
+  padding: 5px;
+  background: #222;
+  color: #0ff;
+  border: 1px solid #0ff;
+  cursor: pointer;
+  font-size: 0.8rem;
+  border-radius: 6px;
+}
+
+.control-btn:hover {
+  background: #0ff;
+  color: black;
+}
+.state-display {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 8px;
+  font-size: 1rem;
+  line-height: 1.1rem;
+}
+
+.state-display p {
+  margin: 0;
+  color: rgba(0, 255, 255, 0.811);
+  font-weight: bold;
+}
+
+canvas {
+  flex: 1;             /* kitölti a sidebar mellett a maradék helyet */
+  display: block;
+  width: 100%;
+  height: 100%;
+}

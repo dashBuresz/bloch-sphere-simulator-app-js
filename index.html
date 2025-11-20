@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bloch-Sphere-Simulator-by-Csaba-&-Adam</title>
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  </head>
+  <body>
+    <header>
+      <h1>Bloch Sphere Simulator – by Csaba & Ádám</h1>
+    </header>
+
+    <div class="layout">
+      <!--LEFT SIDEBAR – CONTROLS -->
+      <aside class="sidebar">
+
+        <h2>Quantum Gates</h2>
+        <button class="control-btn" data-gate="X">X Gate</button>
+        <button class="control-btn" data-gate="Y">Y Gate</button>
+        <button class="control-btn" data-gate="Z">Z Gate</button>
+        <button class="control-btn" data-gate="H">Hadamard H Gate</button>
+
+        <button class="control-btn" data-gate="S">S Gate</button>
+        <button class="control-btn" data-gate="T">T Gate</button>
+
+        <h3>Rotation Gates</h3>
+        <label>Rx(θ):</label>
+        <input id="rx-angle" type="number" value="45" min="-360" max="360">
+        <button class="control-btn" data-gate="Rx">Apply Rx</button>
+
+        <label>Ry(θ):</label>
+        <input id="ry-angle" type="number" value="45" min="-360" max="360">
+        <button class="control-btn" data-gate="Ry">Apply Ry</button>
+
+        <label>Rz(θ):</label>
+        <input id="rz-angle" type="number" value="45" min="-360" max="360">
+        <button class="control-btn" data-gate="Rz">Apply Rz</button>
+
+        <hr>
+
+        <!-- DISPLAY STATE ANGLES -->
+        <div class="state-display">
+          <p>θ (theta): <span id="theta-value">0°</span></p>
+          <p>φ (phi): <span id="phi-value">0°</span></p>
+        </div>
+
+        <label>Theta (θ):</label>
+        <input id="theta-slider" type="range" min="0" max="180" value="0">
+
+        <label>Phi (φ):</label>
+        <input id="phi-slider" type="range" min="0" max="360" value="0">
+
+        <hr>
+
+        <!-- AMPLITUDES DISPLAY -->
+        <h3>State Amplitudes</h3>
+        <p>|ψ⟩ = α|0⟩ + β|1⟩</p>
+        <p>α: <span id="alpha-value">1 + 0i</span></p>
+        <p>β: <span id="beta-value">0 + 0i</span></p>
+
+        <hr>
+
+        <!-- CUSTOM STATE INPUT -->
+        <h3>Set Custom State</h3>
+        <label>α (real):</label>
+        <input id="alpha-real" type="number" value="1" step="0.01">
+
+        <label>α (imag):</label>
+        <input id="alpha-imag" type="number" value="0" step="0.01">
+
+        <label>β (real):</label>
+        <input id="beta-real" type="number" value="0" step="0.01">
+
+        <label>β (imag):</label>
+        <input id="beta-imag" type="number" value="0" step="0.01">
+
+        <button id="apply-custom-state" class="control-btn">
+          Apply Custom |ψ⟩
+        </button>
+
+        <button id="random-state" class="control-btn">
+          Random State
+        </button>
+
+        <hr>
+
+        <!-- CIRCUIT -->
+        <h2>Circuit</h2>
+        <div id="circuit-display" style="min-height: 80px; border: 1px solid #ccc; padding: 5px;">
+          (empty)
+        </div>
+
+        <button id="reset-circuit" class="control-btn" style="background:#900; color:white;">
+          Reset Circuit
+        </button>
+
+        <button id="run-circuit" class="control-btn" style="background:#063; color:white;">
+          Run Circuit
+        </button>
+
+      </aside>
+
+      <!-- 3D CANVAS -->
+      <canvas id="bg"></canvas>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
