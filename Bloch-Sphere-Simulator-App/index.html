@@ -7,7 +7,30 @@
     <title>bloch-sphere-app</title>
   </head>
   <body>    
-    <canvas id="bg"></canvas>
+    <header>
+      <h1>Bloch-Sphere-Simulator-by-Csaba-&-Adam</h1>
+    </header> 
+    <div class="layout">
+      <aside class="sidebar">
+        <h2>Controls</h2>
+        <button class="control-btn">X Gate</button>
+        <button class="control-btn">Y Gate</button>
+        <button class="control-btn">Z Gate</button>
+        <button class="control-btn">Hadamard H Gate</button>
+
+        <hr />
+        <div class="state-display">
+          <p>θ (theta): <span id="theta-value">0°</span></p>
+          <p>φ (phi): <span id="phi-value">0°</span></p>
+        </div>
+        
+        <label>Theta (θ):</label>
+        <input id="theta-slider" type="range" min="0" max="180" value="0">
+        <label>Phi (φ):</label>
+        <input id="phi-slider" type="range" min="0" max="360" value="0">
+      </aside>
+      <canvas id="bg"></canvas>
+    </div>
 
     <script type="module" src="/src/main.js"></script>
   </body>
