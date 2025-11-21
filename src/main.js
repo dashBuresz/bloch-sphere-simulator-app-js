@@ -1,6 +1,5 @@
 import './style.css'
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js";
-import { GridHelper } from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 
 let scene;
@@ -85,9 +84,6 @@ function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
   controls.update();
-  //Optional rotation:
-  // blochSphere.rotation.y += 0.002;
-  // axes.rotation.y += 0.002;
 }
 
 //Start everything
@@ -117,18 +113,7 @@ const betaRealDisplay = document.getElementById("beta-re-val");
 const betaImDisplay = document.getElementById("beta-im-val");
 //adding event listeners
 //TODO refactor updateDisplayedAngles to handle the case where we determina a quantum state by amplitudes. 
-alphaRealField.addEventListener("number", () => {
-  updateDisplayedAngles();
-});
-alphaImField.addEventListener("number", () => {
-  updateDisplayedAngles();
-});
-betaRealField.addEventListener("number", () => {
-  updateDisplayedAngles();
-});
-betaImField.addEventListener("number", () => {
-  updateDisplayedAngles();
-});
+
 
 //Listen for slider changes
 thetaSlider.addEventListener("input", () => {
@@ -138,7 +123,18 @@ thetaSlider.addEventListener("input", () => {
 phiSlider.addEventListener("input", () => {
   updateDisplayedAngles();
 });
-
+alphaRealField.addEventListener("number", () => {
+  updateDisplayedAmplitudes();
+});
+alphaImField.addEventListener("number", () => {
+  updateDisplayedAmplitudes();
+});
+betaRealField.addEventListener("number", () => {
+  updateDisplayedAmplitudes();
+});
+betaImField.addEventListener("number", () => {
+  updateDisplayedAmplitudes();
+});
 circuitDisplay.addEventListener("input", () => {
   circuitDisplay.dataset.editing = "true"; //jelzi, hogy manuális szerkesztés folyik
 });
@@ -242,9 +238,17 @@ A Circuit azt is kiírja, hogy milyen kapuk lettek eddig hozzáadva.
 function updateDisplayedAngles() {
   thetaValueDisplay.textContent = thetaSlider.value + "°";
   phiValueDisplay.textContent = phiSlider.value + "°";
-  updateBlochVector();
+  updateBlochVectorFromAngles();
 }
-function updateBlochVector() {
+function updateDisplayedAmplitudes() {
+  alphaRealDisplay.textContent = alphaRealField.value;
+  alphaImDisplay.textContent = alphaImField.value;
+  betaRealDisplay.textContent = betaRealField.value;
+  betaImDisplay.text = betaImField.value;
+  updateBlochVectorFromAmplitudes(alphaRealField.value, alphaImField.value, betaRealField.value, betaImField.value);
+}
+//TODO continues here refactor the blochVector function
+function updateBlochVectorFromAngles() {
   const theta = Number(thetaSlider.value);
   const phi = Number(phiSlider.value);
 
@@ -258,6 +262,17 @@ function updateBlochVector() {
   const z = Math.cos(th);
 
   //Update the arrow direction
+  updateBlochVectorFromXYZ(x, y, z);
+}
+function updateBlochVectorFromAmplitudes(alphare, alphaim, betare, betaim)
+{
+  const x = 2*(alphare * betare + alphaim * betaim);
+  const y = 2*(alphare * betaim - alphaim * betare);
+  const z = (alphare**2 + aplhaim**2) - (betare**2 + betaim**2);
+  updateBlochVectorFromXYZ(x,y,z);
+}
+function updateBlochVectorFromXYZ(x, y, z)
+{
   const newDirection = new THREE.Vector3(x, y, z).normalize();
   blochVector.setDirection(newDirection);
 }
