@@ -43,19 +43,21 @@ const qubitState = {
 function anglesToAmplitudes(thetaDeg, phiDeg)
 {
   //converting to radians
-  const thetaRad = thetaDeg*Math.PI/180;
-  const phiRad = phiDeg*Math.PI/180;
+  const theta = thetaDeg*Math.PI/180;
+  const phi = phiDeg*Math.PI/180;
+
   const alphaRe = Math.cos(theta/2);
   const alphaIm = 0;
 
-  const betaRe = alphaRe * Math.cos(phi);
-  const betaIm = alphaRe * Math.sin(phi);
+  const s = Math.sin(theta/2);
+  const betaRe = s * Math.cos(phi);
+  const betaIm = s * Math.sin(phi);
   return {
     alpha: {re: alphaRe, im: alphaIm}, 
     beta: {re: betaRe, im: betaIm},
   };
 }
-function amplitudesToBLoch(alpha, beta)
+function amplitudesToBloch(alpha, beta)
 {
   const {re: ar, im:ai} = alpha;
   const {re: br, im:bi} = beta;
@@ -65,6 +67,10 @@ function amplitudesToBLoch(alpha, beta)
   const z = (ar*ar + ai*ai) - (br*br + bi*bi);
   const theta = Math.acos(Math.max(-1, Math.min(1, z)));
   const phi = Math.atan2(y, x);
+
+  const thetaDeg = theta * 180/Math.PI;
+  const phiDeg = phi * 180/Math.PI;
+
   if (phiDeg < 0) phiDeg += 360; //we make sure that phi has a positive "phase", so if phi is -60° that would make it 300°, pretty simple. 
   return {x, y, z, thetaDeg, phiDeg};
 }
@@ -78,7 +84,7 @@ animate();
 //new stuff
 function renderState()
 {
-  const {x, y, z, thetaDeg, phiDeg} = amplitudesToBLoch(qubitState.alpha, qubitState.beta);
+  const {x, y, z, thetaDeg, phiDeg} = amplitudesToBloch(qubitState.alpha, qubitState.beta);
   //update the qubit state
   qubitState.thetaDeg = thetaDeg;
   qubitState.phiDeg = phiDeg;
@@ -225,7 +231,7 @@ function initUI() {
 
 function initEventListener()
 {
-  gridButton.addEventListener("click", grid.visible = !grid.visible);
+  gridButton.addEventListener("click", () => {grid.visible = !grid.visible;});
   thetaSlider.addEventListener("input", onAngleschanged);
   phiSlider.addEventListener("input", onAngleschanged);
   alphaRealField.addEventListener("input", onAmplitudeChanged);
@@ -351,18 +357,6 @@ A Circuit azt is kiírja, hogy milyen kapuk lettek eddig hozzáadva.
 
 */
 //Functions
-function updateDisplayedAngles() {
-  thetaValueDisplay.textContent = thetaSlider.value + "°";
-  phiValueDisplay.textContent = phiSlider.value + "°";
-  updateBlochVectorFromAngles();
-}
-function updateDisplayedAmplitudes() {
-  alphaRealDisplay.textContent = alphaRealField.value;
-  alphaImDisplay.textContent = alphaImField.value;
-  betaRealDisplay.textContent = betaRealField.value;
-  betaImDisplay.text = betaImField.value;
-  updateBlochVectorFromAmplitudes(alphaRealField.value, alphaImField.value, betaRealField.value, betaImField.value);
-}
 //TODO continues here refactor the blochVector function
 function updateBlochVectorFromAngles() {
   const theta = Number(thetaSlider.value);
@@ -384,7 +378,7 @@ function updateBlochVectorFromAmplitudes(alphare, alphaim, betare, betaim)
 {
   const x = 2*(alphare * betare + alphaim * betaim);
   const y = 2*(alphare * betaim - alphaim * betare);
-  const z = (alphare**2 + aplhaim**2) - (betare**2 + betaim**2);
+  const z = (alphare**2 + alphaim**2) - (betare**2 + betaim**2);
   updateBlochVectorFromXYZ(x,y,z);
 }
 function updateBlochVectorFromXYZ(x, y, z)
