@@ -12,13 +12,13 @@ To run the program, you'll need the following things:
 - start the app locally by running: `npm run dev`
 
 Here is a [link to a video](https://www.youtube.com/watch?v=Q7AOvWpIVHU) that explains it pretty well. 
-[!IMPORTANT]
-## Currently how to set it up: 
+>[!IMPORTANT]
+>## Currently how to set it up: 
 Requirements: 
 - [Node.js](https://nodejs.org/en/download)
     - Use the powershell script (select the following options before copying it: Get Node.js®`v24.11.1(LTS)` for `Windows` using `Chocolatey` with `npm`)
-    [!IMPORTANT]
-    - installing Node.js will also install npm!
+    >[!IMPORTANT]
+    - >installing Node.js will also install npm!
 - NPM package manager
 
 Check if you meet requirements by running the `node -v` and `npm -v` commands respectively. 
