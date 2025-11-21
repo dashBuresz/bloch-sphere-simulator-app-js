@@ -8,13 +8,13 @@
   </head>
   <body>
     <header>
-      <h1>Bloch Sphere Simulator – by Csaba & Ádám</h1>
+      <h1>Bloch Sphere Simulator</h1>
     </header>
 
     <div class="layout">
       <!--LEFT SIDEBAR – CONTROLS -->
       <aside class="sidebar">
-
+        <button id="toggle-grid" class="control-btn">Toggle grid</button>
         <h2>Quantum Gates</h2>
         <button class="control-btn" data-gate="X">X Gate</button>
         <button class="control-btn" data-gate="Y">Y Gate</button>
@@ -25,29 +25,38 @@
         <button class="control-btn" data-gate="T">T Gate</button>
 
         <h3>Rotation Gates</h3>
-        <label>Rx(θ):</label>
+        <label>Rx(θ):
         <input id="rx-angle" type="number" value="45" min="-360" max="360">
         <button class="control-btn" data-gate="Rx">Apply Rx</button>
-
-        <label>Ry(θ):</label>
+        </label>
+        <label>Ry(θ):
         <input id="ry-angle" type="number" value="45" min="-360" max="360">
         <button class="control-btn" data-gate="Ry">Apply Ry</button>
+        </label>
 
-        <label>Rz(θ):</label>
+        <label>Rz(θ):
         <input id="rz-angle" type="number" value="45" min="-360" max="360">
         <button class="control-btn" data-gate="Rz">Apply Rz</button>
-
+        </label>
         <hr>
 
         <!-- DISPLAY STATE ANGLES -->
         <div class="state-display">
+          <p>α (re): <span id="alpha-re-val"></span></p>
+          <p>α (im): <span id="alpha-im-val"></span></p>
+          <p>β (re): <span id="beta-re-val"></span></p>
+          <p>β (im): <span id="beta-im-val"></span></p>
           <p>θ (theta): <span id="theta-value">0°</span></p>
           <p>φ (phi): <span id="phi-value">0°</span></p>
         </div>
 
+        <label>α (real):<input id="alpha-real" type="number" value="1" step="0.1"></label>
+        <label>α (imag):<input id="alpha-imag" type="number" value="0" step="0.1"></label>
+        <label>β (real):<input id="beta-real" type="number" value="0" step="0.1"></label>
+        <label>β (imag):<input id="beta-imag" type="number" value="0" step="0.1"></label>
+
         <label>Theta (θ):</label>
         <input id="theta-slider" type="range" min="0" max="180" value="0">
-
         <label>Phi (φ):</label>
         <input id="phi-slider" type="range" min="0" max="360" value="0">
 
@@ -63,18 +72,7 @@
 
         <!-- CUSTOM STATE INPUT -->
         <h3>Set Custom State</h3>
-        <label>α (real):</label>
-        <input id="alpha-real" type="number" value="1" step="0.01">
-
-        <label>α (imag):</label>
-        <input id="alpha-imag" type="number" value="0" step="0.01">
-
-        <label>β (real):</label>
-        <input id="beta-real" type="number" value="0" step="0.01">
-
-        <label>β (imag):</label>
-        <input id="beta-imag" type="number" value="0" step="0.01">
-
+        
         <button id="apply-custom-state" class="control-btn">
           Apply Custom |ψ⟩
         </button>

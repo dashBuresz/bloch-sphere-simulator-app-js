@@ -1,5 +1,6 @@
 import './style.css'
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js";
+import { GridHelper } from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 
 let scene;
@@ -10,8 +11,9 @@ let axes;
 let blochVector;
 let controls;
 let circuitQueue = [];
+let grid;
 
-function init() {
+function canvasInit() {
 
   //Scene setup
   scene = new THREE.Scene();
@@ -71,8 +73,10 @@ function init() {
 
   scene.add(blochVector);
 
-  //TODO make the inputs and start implementing logic and then updating the vector. 
-  
+  //adding grids. 
+  grid = new THREE.GridHelper(20,20);
+  grid.scale.setScalar(0.1);
+  scene.add(grid);
 }
 
 
@@ -87,17 +91,44 @@ function animate() {
 }
 
 //Start everything
-init();
+canvasInit();
 animate();
 
 //UI init - we might want to move all this to a function
+const gridButton = document.getElementById("toggle-grid");
+gridButton.addEventListener("click", () => {
+  grid.visible = !grid.visible;
+});
+//TODO add amplitudes for display, and also the ability to set them. 
+
 const thetaSlider = document.getElementById("theta-slider");
 const phiSlider = document.getElementById("phi-slider");
 const thetaValueDisplay = document.getElementById("theta-value");
 const phiValueDisplay = document.getElementById("phi-value");
 const circuitDisplay = document.getElementById("circuit-display");
 
-
+const alphaRealField = document.getElementById("alpha-real");
+const alphaImField = document.getElementById("aplha-imag");
+const betaRealField = document.getElementById("beta-real");
+const betaImField = document.getElementById("beta-imag");
+const alphaRealDisplay = document.getElementById("alpha-re-val");
+const alphaImDisplay = document.getElementById("aplha-im-val");
+const betaRealDisplay = document.getElementById("beta-re-val");
+const betaImDisplay = document.getElementById("beta-im-val");
+//adding event listeners
+//TODO refactor updateDisplayedAngles to handle the case where we determina a quantum state by amplitudes. 
+alphaRealField.addEventListener("number", () => {
+  updateDisplayedAngles();
+});
+alphaImField.addEventListener("number", () => {
+  updateDisplayedAngles();
+});
+betaRealField.addEventListener("number", () => {
+  updateDisplayedAngles();
+});
+betaImField.addEventListener("number", () => {
+  updateDisplayedAngles();
+});
 
 //Listen for slider changes
 thetaSlider.addEventListener("input", () => {
