@@ -20,5 +20,5 @@ Check if you meet requirements by running the 'node -v' and 'npm -v' commands re
 The Setup: 
 - run 'npm install three' to install the three.js 3D library. (these are files are ignored inside the .gitignore file, because it's an external library and our repository doesn't need to track it. This is why you have to install it before starting development. )
 - run 'npm run dev' to start hosting locally, 
-    - in the terminal you'll get a 'http://localhost:<portnumber>/' link, 
+    - in the terminal you'll get a 'http://localhost:yourportnumber/' link, 
     - use 'ctrl+left_click' to open it and view the result of your code. **(DO NOT USE LIVE SERVER)**
