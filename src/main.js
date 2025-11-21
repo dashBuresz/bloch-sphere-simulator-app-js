@@ -1,6 +1,6 @@
 import './style.css'
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls.js";
 
 let scene;
 let camera;
@@ -12,7 +12,132 @@ let controls;
 let circuitQueue = [];
 let grid;
 
-function canvasInit() {
+//ui elements
+let gridButton;
+let thetaSlider, phiSlider;
+let thetaValueDisplay;
+let phiValueDisplay;
+let circuitDisplay;
+
+let alphaRealField;
+let alphaImField;
+let betaRealField;
+let betaImField;
+
+let alphaImDisplay;
+let alphaRealDisplay;
+let betaRealDisplay;
+let betaImDisplay;
+
+let alphaPrettySpan, betaPrettySpan; //α: 1 + 0i style lines
+//MODEL LOGIC START
+//resembling a quantum state in code: 
+const qubitState = {
+  //amplitudes
+  alpha: {re: 1, im: 0}, 
+  beta: {re: 0, im: 0},
+  //angles
+  thetaDeg: 0, 
+  phiDeg: 0,
+};
+function anglesToAmplitudes(thetaDeg, phiDeg)
+{
+  //converting to radians
+  const thetaRad = thetaDeg*Math.PI/180;
+  const phiRad = phiDeg*Math.PI/180;
+  const alphaRe = Math.cos(theta/2);
+  const alphaIm = 0;
+
+  const betaRe = alphaRe * Math.cos(phi);
+  const betaIm = alphaRe * Math.sin(phi);
+  return {
+    alpha: {re: alphaRe, im: alphaIm}, 
+    beta: {re: betaRe, im: betaIm},
+  };
+}
+function amplitudesToBLoch(alpha, beta)
+{
+  const {re: ar, im:ai} = alpha;
+  const {re: br, im:bi} = beta;
+
+  const x = 2 * (ar * br + ai * bi);
+  const y = 2 * (ar * br - ai * bi);
+  const z = (ar*ar + ai*ai) - (br*br + bi*bi);
+  const theta = Math.acos(Math.max(-1, Math.min(1, z)));
+  const phi = Math.atan2(y, x);
+  if (phiDeg < 0) phiDeg += 360; //we make sure that phi has a positive "phase", so if phi is -60° that would make it 300°, pretty simple. 
+  return {x, y, z, thetaDeg, phiDeg};
+}
+//MODEL LOGIC END
+//running the scripts that make up the app
+initCanvas();
+initUI();
+initEventListener();
+animate();
+
+//new stuff
+function renderState()
+{
+  const {x, y, z, thetaDeg, phiDeg} = amplitudesToBLoch(qubitState.alpha, qubitState.beta);
+  //update the qubit state
+  qubitState.thetaDeg = thetaDeg;
+  qubitState.phiDeg = phiDeg;
+  updateBlochVectorFromXYZ(x,y,z);
+  //update slider values
+  thetaSlider.value = thetaDeg;
+  phiSlider.value = phiDeg;
+  //update angle display values
+  thetaValueDisplay.textContent = `${thetaDeg.toFixed(1)}°`;
+  phiValueDisplay.textContent = `${phiDeg.toFixed(1)}°`;
+  //update amplitude input fields
+  alphaRealField.value = qubitState.alpha.re.toFixed(3); //toFixed sets the precision of the component to .000 decimal
+  alphaImField.value = qubitState.alpha.im.toFixed(3);
+  betaRealField.value = qubitState.beta.re.toFixed(3);
+  betaImField.value = qubitState.beta.im.toFixed(3);
+  //update amplitude display 
+  alphaRealDisplay.textContent = qubitState.alpha.re.toFixed(3);
+  alphaImDisplay.textContent = qubitState.alpha.im.toFixed(3);
+  betaRealDisplay.textContent = qubitState.beta.re.toFixed(3);
+  betaImDisplay.textContent = qubitState.beta.im.toFixed(3);
+  //this is in advance in case we want to display the amplitudes themselves as well as their individual components
+  const a = qubitState.alpha;
+  const b = qubitState.beta;
+  alphaPrettySpan.textContent = `${a.re.toFixed(3)} + ${a.im.toFixed(3)}i`;
+  betaPrettySpan.textContent = `${b.re.toFixed(3)} + ${b.im.toFixed(3)}i`;
+}
+//if we use the sliders this will run
+function onAngleschanged()
+{
+  //getting the values from the slider inputs
+  const thetaDeg = Number(thetaSlider.value);
+  const phiDeg = Number(phiSlider.value);
+  //converting values
+  const {alpha, beta} = anglesToAmplitudes(thetaDeg, phiDeg);
+  //changing the model
+  qubitState.alpha = alpha;
+  qubitState.beta = beta;
+  //and we update the state after our changes are made to the model
+  renderState();
+}
+function onAmplitudeChanged()
+{
+  //getting the values from the amplitude input fields
+  const ar = Number(alphaRealField.value || 0);
+  const ai = Number(alphaImField.value || 0);
+  const br = Number(betaRealField.value || 0);
+  const bi = Number(betaImField.value || 0);
+  //normalize alpha and beta since we need |α|² + |β|² = 1 to be true 
+  const  normSq = ar*ar + ai*ai + br*br + bi*bi || 1;
+  const norm = Math.sqrt(normSq);
+  //update the model
+  qubitState.alpha = {re: ar / norm, im: ai / norm};
+  qubitState.beta = {re: br / norm, im: bi / norm};
+  //render the changes onto the screen
+  renderState();
+}
+//end of new stuff
+
+function initCanvas() {
 
   //Scene setup
   scene = new THREE.Scene();
@@ -26,7 +151,7 @@ function canvasInit() {
 
   renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('#bg'),
-    alpha: true
+    alpha: true,
   });
 
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -77,7 +202,38 @@ function canvasInit() {
   grid.scale.setScalar(0.1);
   scene.add(grid);
 }
+function initUI() {
+  gridButton = document.getElementById("toggle-grid"); 
 
+  thetaSlider       = document.getElementById("theta-slider");
+  phiSlider         = document.getElementById("phi-slider");
+  thetaValueDisplay = document.getElementById("theta-value");
+  phiValueDisplay   = document.getElementById("phi-value");
+
+  alphaRealField = document.getElementById("alpha-real");
+  alphaImField   = document.getElementById("alpha-imag"); // FIXED
+  betaRealField  = document.getElementById("beta-real");
+  betaImField    = document.getElementById("beta-imag");
+
+  alphaRealDisplay = document.getElementById("alpha-re-val");
+  alphaImDisplay   = document.getElementById("alpha-im-val"); // FIXED
+  betaRealDisplay  = document.getElementById("beta-re-val");
+  betaImDisplay    = document.getElementById("beta-im-val");
+
+  circuitDisplay = document.getElementById("circuit-display");
+}
+
+function initEventListener()
+{
+  gridButton.addEventListener("click", grid.visible = !grid.visible);
+  thetaSlider.addEventListener("input", onAngleschanged);
+  phiSlider.addEventListener("input", onAngleschanged);
+  alphaRealField.addEventListener("input", onAmplitudeChanged);
+  alphaImField.addEventListener("input", onAmplitudeChanged);
+  betaRealField.addEventListener("input", onAmplitudeChanged);
+  betaImField.addEventListener("input", onAmplitudeChanged);
+
+}
 
 //Animation loop
 function animate() {
@@ -86,55 +242,15 @@ function animate() {
   controls.update();
 }
 
-//Start everything
-canvasInit();
-animate();
 
 //UI init - we might want to move all this to a function
-const gridButton = document.getElementById("toggle-grid");
-gridButton.addEventListener("click", () => {
-  grid.visible = !grid.visible;
-});
-//TODO add amplitudes for display, and also the ability to set them. 
 
-const thetaSlider = document.getElementById("theta-slider");
-const phiSlider = document.getElementById("phi-slider");
-const thetaValueDisplay = document.getElementById("theta-value");
-const phiValueDisplay = document.getElementById("phi-value");
-const circuitDisplay = document.getElementById("circuit-display");
 
-const alphaRealField = document.getElementById("alpha-real");
-const alphaImField = document.getElementById("aplha-imag");
-const betaRealField = document.getElementById("beta-real");
-const betaImField = document.getElementById("beta-imag");
-const alphaRealDisplay = document.getElementById("alpha-re-val");
-const alphaImDisplay = document.getElementById("aplha-im-val");
-const betaRealDisplay = document.getElementById("beta-re-val");
-const betaImDisplay = document.getElementById("beta-im-val");
+
+
 //adding event listeners
 //TODO refactor updateDisplayedAngles to handle the case where we determina a quantum state by amplitudes. 
-
-
-//Listen for slider changes
-thetaSlider.addEventListener("input", () => {
-  updateDisplayedAngles();
-});
-
-phiSlider.addEventListener("input", () => {
-  updateDisplayedAngles();
-});
-alphaRealField.addEventListener("number", () => {
-  updateDisplayedAmplitudes();
-});
-alphaImField.addEventListener("number", () => {
-  updateDisplayedAmplitudes();
-});
-betaRealField.addEventListener("number", () => {
-  updateDisplayedAmplitudes();
-});
-betaImField.addEventListener("number", () => {
-  updateDisplayedAmplitudes();
-});
+//THIS IS TOP LEVEL MOVE IT NO TO TOP LEVEL GOD DAMN IT YOU IDIOT. 
 circuitDisplay.addEventListener("input", () => {
   circuitDisplay.dataset.editing = "true"; //jelzi, hogy manuális szerkesztés folyik
 });
