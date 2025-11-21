@@ -17,8 +17,8 @@ Here is a [link to a video](https://www.youtube.com/watch?v=Q7AOvWpIVHU) that ex
 Requirements: 
 - [Node.js](https://nodejs.org/en/download)
     - Use the powershell script (select the following options before copying it: Get Node.js®`v24.11.1(LTS)` for `Windows` using `Chocolatey` with `npm`)
-    >[!IMPORTANT]
-    - >installing Node.js will also install npm!
+>[!IMPORTANT]
+>   - installing Node.js will also install npm!
 - NPM package manager
 
 Check if you meet requirements by running the `node -v` and `npm -v` commands respectively. 
