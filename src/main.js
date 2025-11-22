@@ -30,7 +30,7 @@ let betaRealDisplay;
 let betaImDisplay;
 
 let alphaPrettySpan, betaPrettySpan; //α: 1 + 0i style lines
-//MODEL LOGIC START
+//MODEL START
 //resembling a quantum state in code: 
 const qubitState = {
   //amplitudes
@@ -40,41 +40,7 @@ const qubitState = {
   thetaDeg: 0, 
   phiDeg: 0,
 };
-function anglesToAmplitudes(thetaDeg, phiDeg)
-{
-  //converting to radians
-  const theta = thetaDeg*Math.PI/180;
-  const phi = phiDeg*Math.PI/180;
-
-  const alphaRe = Math.cos(theta/2);
-  const alphaIm = 0;
-
-  const s = Math.sin(theta/2);
-  const betaRe = s * Math.cos(phi);
-  const betaIm = s * Math.sin(phi);
-  return {
-    alpha: {re: alphaRe, im: alphaIm}, 
-    beta: {re: betaRe, im: betaIm},
-  };
-}
-function amplitudesToBloch(alpha, beta)
-{
-  const {re: ar, im:ai} = alpha;
-  const {re: br, im:bi} = beta;
-
-  const x = 2 * (ar * br + ai * bi);
-  const y = 2 * (ar * br - ai * bi);
-  const z = (ar*ar + ai*ai) - (br*br + bi*bi);
-  const theta = Math.acos(Math.max(-1, Math.min(1, z)));
-  const phi = Math.atan2(y, x);
-
-  const thetaDeg = theta * 180/Math.PI;
-  const phiDeg = phi * 180/Math.PI;
-
-  if (phiDeg < 0) phiDeg += 360; //we make sure that phi has a positive "phase", so if phi is -60° that would make it 300°, pretty simple. 
-  return {x, y, z, thetaDeg, phiDeg};
-}
-//MODEL LOGIC END
+//MODEL END
 //running the scripts that make up the app
 initCanvas();
 initUI();
@@ -140,6 +106,40 @@ function onAmplitudeChanged()
   qubitState.beta = {re: br / norm, im: bi / norm};
   //render the changes onto the screen
   renderState();
+}
+function anglesToAmplitudes(thetaDeg, phiDeg)
+{
+  //converting to radians
+  const theta = thetaDeg*Math.PI/180;
+  const phi = phiDeg*Math.PI/180;
+
+  const alphaRe = Math.cos(theta/2);
+  const alphaIm = 0;
+
+  const s = Math.sin(theta/2);
+  const betaRe = s * Math.cos(phi);
+  const betaIm = s * Math.sin(phi);
+  return {
+    alpha: {re: alphaRe, im: alphaIm}, 
+    beta: {re: betaRe, im: betaIm},
+  };
+}
+function amplitudesToBloch(alpha, beta)
+{
+  const {re: ar, im:ai} = alpha;
+  const {re: br, im:bi} = beta;
+
+  const x = 2 * (ar * br + ai * bi);
+  const y = 2 * (ar * bi - ai * br);
+  const z = (ar*ar + ai*ai) - (br*br + bi*bi);
+  const theta = Math.acos(Math.max(-1, Math.min(1, z)));
+  let phi = Math.atan2(y, x);
+
+  const thetaDeg = theta * 180/Math.PI;
+  let phiDeg = phi * 180/Math.PI;
+
+  if (phiDeg < 0) phiDeg += 360; //we make sure that phi has a positive "phase", so if phi is -60° that would make it 300°, pretty simple. 
+  return {x, y, z, thetaDeg, phiDeg};
 }
 //end of new stuff
 
@@ -208,6 +208,7 @@ function initCanvas() {
   grid.scale.setScalar(0.1);
   scene.add(grid);
 }
+//UI init - we might want to move all this to a function (WE DID HAHAHHA)
 function initUI() {
   gridButton = document.getElementById("toggle-grid"); 
 
@@ -238,7 +239,94 @@ function initEventListener()
   alphaImField.addEventListener("input", onAmplitudeChanged);
   betaRealField.addEventListener("input", onAmplitudeChanged);
   betaImField.addEventListener("input", onAmplitudeChanged);
+  circuitDisplay.addEventListener("input", () => {
+  circuitDisplay.dataset.editing = "true"; //jelzi, hogy manuális szerkesztés folyik
+  });
+  document.querySelectorAll(".control-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const text = btn.textContent;
 
+      let gateName = null;
+      let angle = 0;
+
+      if (text.includes("X Gate")) gateName = "X";
+      else if (text.includes("Y Gate")) gateName = "Y";
+      else if (text.includes("Z Gate")) gateName = "Z";
+      else if (text.includes("Hadamard H Gate")) gateName = "H";
+      else if (text.includes("S Gate")) gateName = "S";
+      else if (text.includes("T Gate")) gateName = "T";
+      else if (text.includes("Apply Rx")) {
+        gateName = "Rx";
+        angle = Number(document.getElementById("rx-angle").value);
+      }
+      else if (text.includes("Apply Ry")) {
+        gateName = "Ry";
+        angle = Number(document.getElementById("ry-angle").value);
+      }
+      else if (text.includes("Apply Rz")) {
+        gateName = "Rz";
+        angle = Number(document.getElementById("rz-angle").value);
+      }
+
+      if (gateName) {
+        // hozzáadjuk a circuitQueue-hoz
+        circuitQueue.push({ gate: gateName, angle: angle });
+        updateCircuitDisplay();
+
+        // Azonnal futtatjuk a kaput a gömb frissítéséhez
+        switch(gateName) {
+          case "X": applyXGate(); break;
+          case "Y": applyYGate(); break;
+          case "Z": applyZGate(); break;
+          case "H": applyHGate(); break;
+          case "S": applySGate(); break;
+          case "T": applyTGate(); break;
+          case "Rx": applyRxGate(angle); break;
+          case "Ry": applyRyGate(angle); break;
+          case "Rz": applyRzGate(angle); break;
+        }
+  }
+    });
+  });
+
+  document.getElementById("run-circuit").addEventListener("click", () => {
+    const displayText = circuitDisplay.textContent.trim();
+    let queueToRun = [];
+
+    if (displayText && displayText !== "(empty)" && circuitDisplay.dataset.editing === "true") {
+        //Manual input parsing
+      const items = displayText.split("→").map(s => s.trim());
+      items.forEach(item => {
+        const match = item.match(/^([a-zA-Z]+)(\(([-+]?\d+(\.\d+)?)°\))?$/);
+        if (match) queueToRun.push({ gate: match[1], angle: match[3] ? Number(match[3]) : 0 });
+      });
+    } else {
+      queueToRun = [...circuitQueue];
+    }
+    for (const item of queueToRun) {
+      switch(item.gate) {
+        case "X": applyXGate(); break;
+        case "Y": applyYGate(); break;
+        case "Z": applyZGate(); break;
+        case "H": applyHGate(); break;
+        case "S": applySGate(); break;
+        case "T": applyTGate(); break;
+        case "Rx": applyRxGate(item.angle); break;
+        case "Ry": applyRyGate(item.angle); break;
+        case "Rz": applyRzGate(item.angle); break;
+      }
+    }
+
+    //resetting the display
+    circuitDisplay.dataset.editing = "false";
+    updateCircuitDisplay(); 
+  });
+
+
+  document.getElementById("reset-circuit").addEventListener("click", () => {
+    circuitQueue = [];
+    updateCircuitDisplay();
+  });
 }
 
 //Animation loop
@@ -247,105 +335,6 @@ function animate() {
   renderer.render(scene, camera);
   controls.update();
 }
-
-
-//UI init - we might want to move all this to a function
-
-
-
-
-//adding event listeners
-//TODO refactor updateDisplayedAngles to handle the case where we determina a quantum state by amplitudes. 
-//THIS IS TOP LEVEL MOVE IT NO TO TOP LEVEL GOD DAMN IT YOU IDIOT. 
-circuitDisplay.addEventListener("input", () => {
-  circuitDisplay.dataset.editing = "true"; //jelzi, hogy manuális szerkesztés folyik
-});
-document.querySelectorAll(".control-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const text = btn.textContent;
-
-    let gateName = null;
-    let angle = 0;
-
-    if (text.includes("X Gate")) gateName = "X";
-    else if (text.includes("Y Gate")) gateName = "Y";
-    else if (text.includes("Z Gate")) gateName = "Z";
-    else if (text.includes("Hadamard H Gate")) gateName = "H";
-    else if (text.includes("S Gate")) gateName = "S";
-    else if (text.includes("T Gate")) gateName = "T";
-    else if (text.includes("Apply Rx")) {
-      gateName = "Rx";
-      angle = Number(document.getElementById("rx-angle").value);
-    }
-    else if (text.includes("Apply Ry")) {
-      gateName = "Ry";
-      angle = Number(document.getElementById("ry-angle").value);
-    }
-    else if (text.includes("Apply Rz")) {
-      gateName = "Rz";
-      angle = Number(document.getElementById("rz-angle").value);
-    }
-
-    if (gateName) {
-  // hozzáadjuk a circuitQueue-hoz
-  circuitQueue.push({ gate: gateName, angle: angle });
-  updateCircuitDisplay();
-
-  // Azonnal futtatjuk a kaput a gömb frissítéséhez
-  switch(gateName) {
-    case "X": applyXGate(); break;
-    case "Y": applyYGate(); break;
-    case "Z": applyZGate(); break;
-    case "H": applyHGate(); break;
-    case "S": applySGate(); break;
-    case "T": applyTGate(); break;
-    case "Rx": applyRxGate(angle); break;
-    case "Ry": applyRyGate(angle); break;
-    case "Rz": applyRzGate(angle); break;
-  }
-}
-  });
-});
-
-document.getElementById("run-circuit").addEventListener("click", () => {
-  const displayText = circuitDisplay.textContent.trim();
-  let queueToRun = [];
-
-  if (displayText && displayText !== "(empty)" && circuitDisplay.dataset.editing === "true") {
-    //Manual input parsing
-    const items = displayText.split("→").map(s => s.trim());
-    items.forEach(item => {
-      const match = item.match(/^([a-zA-Z]+)(\(([-+]?\d+(\.\d+)?)°\))?$/);
-      if (match) queueToRun.push({ gate: match[1], angle: match[3] ? Number(match[3]) : 0 });
-    });
-  } else {
-    queueToRun = [...circuitQueue];
-  }
-  for (const item of queueToRun) {
-    switch(item.gate) {
-      case "X": applyXGate(); break;
-      case "Y": applyYGate(); break;
-      case "Z": applyZGate(); break;
-      case "H": applyHGate(); break;
-      case "S": applySGate(); break;
-      case "T": applyTGate(); break;
-      case "Rx": applyRxGate(item.angle); break;
-      case "Ry": applyRyGate(item.angle); break;
-      case "Rz": applyRzGate(item.angle); break;
-    }
-  }
-
-  //resetting the display
-  circuitDisplay.dataset.editing = "false";
-  updateCircuitDisplay(); 
-});
-
-
-document.getElementById("reset-circuit").addEventListener("click", () => {
-  circuitQueue = [];
-  updateCircuitDisplay();
-});
-
 /*        CIRCUIT USAGE
 Használat
 Kattints a kapugombokra (X, Y, Z, H, S, T vagy Apply Rx/Ry/Rz) → a kapu bekerül a circuitQueue-ba és a #circuit-display-ben megjelenik.
@@ -357,30 +346,6 @@ A Circuit azt is kiírja, hogy milyen kapuk lettek eddig hozzáadva.
 
 */
 //Functions
-//TODO continues here refactor the blochVector function
-function updateBlochVectorFromAngles() {
-  const theta = Number(thetaSlider.value);
-  const phi = Number(phiSlider.value);
-
-  //Convert to radians
-  const th = theta * Math.PI / 180;
-  const ph = phi * Math.PI / 180;
-
-  //Calculate coordinates
-  const x = Math.sin(th) * Math.cos(ph);
-  const y = Math.sin(th) * Math.sin(ph);
-  const z = Math.cos(th);
-
-  //Update the arrow direction
-  updateBlochVectorFromXYZ(x, y, z);
-}
-function updateBlochVectorFromAmplitudes(alphare, alphaim, betare, betaim)
-{
-  const x = 2*(alphare * betare + alphaim * betaim);
-  const y = 2*(alphare * betaim - alphaim * betare);
-  const z = (alphare**2 + alphaim**2) - (betare**2 + betaim**2);
-  updateBlochVectorFromXYZ(x,y,z);
-}
 function updateBlochVectorFromXYZ(x, y, z)
 {
   const newDirection = new THREE.Vector3(x, y, z).normalize();
@@ -406,14 +371,21 @@ function applyGateRotation(matrix) {
 
   //Convert new vector back to theta/phi
   const newTheta = Math.acos(newZ) * 180 / Math.PI;
-  const newPhi = Math.atan2(newY, newX) * 180 / Math.PI;
+  const newPhi = Math.atan2(newY, newX) * 180 / Math.PI;ű
 
-  //Update sliders
-  thetaSlider.value = newTheta;
-  phiSlider.value = (newPhi + 360) % 360;
+  const newThetaDeg = newTheta * 180 / Math.PI;
+  let newPhiDeg = newPhi * 180 / Math.PI;
+
+  if (newPhiDeg < 0) newPhiDeg += 360;
+  //Update amplitudes
+  const {alpha, beta} = anglesToAmplitudes(newThetaDeg, newPhiDeg);
+  qubitState.alpha = alpha;
+  qubitState.beta = beta;
+  qubitState.thetaDeg = newThetaDeg;
+  qubitState.phiDeg = newPhiDeg;
 
   //Refresh UI & arrow
-  updateDisplayedAngles();
+  renderState();
 }
 
 function applyXGate() {
