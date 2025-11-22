@@ -345,13 +345,13 @@ Reset Circuit → törli a kapusort.
 A Circuit azt is kiírja, hogy milyen kapuk lettek eddig hozzáadva.
 
 */
-//Functions
+//Other Functions
 function updateBlochVectorFromXYZ(x, y, z)
 {
   const newDirection = new THREE.Vector3(x, y, z).normalize();
   blochVector.setDirection(newDirection);
 }
-
+//TODO fix the damn gates
 function applyGateRotation(matrix) {
   //Current direction vector
   const theta = Number(thetaSlider.value);
