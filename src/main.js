@@ -323,9 +323,10 @@ function initEventListener()
   });
 
 
-  document.getElementById("reset-circuit").addEventListener("click", () => {
+  document.getElementById("reset").addEventListener("click", () => {
     circuitQueue = [];
     updateCircuitDisplay();
+    resetQubitState();
   });
 }
 
@@ -351,7 +352,7 @@ function updateBlochVectorFromXYZ(x, y, z)
   const newDirection = new THREE.Vector3(x, y, z).normalize();
   blochVector.setDirection(newDirection);
 }
-//TODO fix the damn gates
+// Gates are fixed, note to everyone, don't write program tired
 function applyGateRotation(matrix) {
   //Current direction vector
   const theta = Number(thetaSlider.value);
@@ -370,13 +371,14 @@ function applyGateRotation(matrix) {
   const newZ = matrix[2][0]*x + matrix[2][1]*y + matrix[2][2]*z;
 
   //Convert new vector back to theta/phi
-  const newTheta = Math.acos(newZ) * 180 / Math.PI;
-  const newPhi = Math.atan2(newY, newX) * 180 / Math.PI;ű
+  const newTheta = Math.acos(Math.max(-1, Math.min(1, newZ)));  // newTheta in radians
+  let newPhi = Math.atan2(newY, newX);
 
   const newThetaDeg = newTheta * 180 / Math.PI;
   let newPhiDeg = newPhi * 180 / Math.PI;
 
   if (newPhiDeg < 0) newPhiDeg += 360;
+
   //Update amplitudes
   const {alpha, beta} = anglesToAmplitudes(newThetaDeg, newPhiDeg);
   qubitState.alpha = alpha;
@@ -503,10 +505,13 @@ function applyRzGate(angleDeg) {
 function updateCircuitDisplay() {
   const display = document.getElementById("circuit-display");
   if (circuitQueue.length === 0) {
-    display.textContent = "(empty)";
+    // Ha a felhasználó nem szerkeszt manuálisan, mutatjuk az (empty)-t
+    if (!display.dataset.editing || display.dataset.editing === "false") {
+      display.textContent = "(empty)";
+    }
   } else {
-    // Ha a felhasználó manuálisan nem szerkeszt, írjuk ki
-    if (!display.isContentEditable || display.dataset.editing !== "true") {
+    // Csak akkor írjuk felül a divet, ha nincs manuális szerkesztés folyamatban
+    if (!display.dataset.editing || display.dataset.editing === "false") {
       display.textContent = circuitQueue
         .map(g => g.gate + (g.angle ? `(${g.angle}°)` : ""))
         .join(" → ");
@@ -514,5 +519,17 @@ function updateCircuitDisplay() {
   }
 }
 
+function resetQubitState(){
+  qubitState.alpha = {re: 1, im: 0};
+  qubitState.beta = {re: 0, im: 0};
+
+  qubitState.thetaDeg = 0;
+  qubitState.phiDeg = 0;
+
+  thetaSlider.value = 0;
+  phiSlider.value = 0;
+
+  renderState();
+}
 
 
