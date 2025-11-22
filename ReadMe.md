@@ -34,5 +34,5 @@ The Setup:
 ## TODOs
 - [ ] determine the issue with quantum gates. 
 - [ ] fix issues and or refactor gates **from 3×3** rotations **to** actual **2×2** complex unitaries on **(α, β)**
-- [ ] ([#2]) figure out how to make this project able to be installed as a standalone browser app, that can be installed on a pc with just a browser and no development enviroment.
+- [ ] [#2](https://github.com/dashBuresz/bloch-sphere-simulator-app-js/issues/2#issue-3653567156) figure out how to make this project able to be installed as a standalone browser app, that can be installed on a pc with just a browser and no development enviroment.
 - [ ] refactor this TODO list so each point references an issue.
