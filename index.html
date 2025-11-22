@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bloch-Sphere-Simulator-by-Csaba-&-Adam</title>
+    <link rel="icon" type="image/svg+xml" href="/bloch-sphere-simulator-app-js/vite.svg" />
+    <script type="module" crossorigin src="/bloch-sphere-simulator-app-js/assets/index-Dp3sRta8.js"></script>
+    <link rel="stylesheet" crossorigin href="/bloch-sphere-simulator-app-js/assets/index-01qbZwZe.css">
+  </head>
+  <body>
+    <header>
+      <h1>Bloch Sphere Simulator</h1>
+    </header>
+
+    <div class="layout">
+      <!--LEFT SIDEBAR – CONTROLS -->
+      <aside class="sidebar">
+        <button id="toggle-grid" class="control-btn">Toggle grid</button>
+        <h2>Quantum Gates</h2>
+        <button class="control-btn" data-gate="X">X Gate</button>
+        <button class="control-btn" data-gate="Y">Y Gate</button>
+        <button class="control-btn" data-gate="Z">Z Gate</button>
+        <button class="control-btn" data-gate="H">Hadamard H Gate</button>
+
+        <button class="control-btn" data-gate="S">S Gate</button>
+        <button class="control-btn" data-gate="T">T Gate</button>
+
+        <h3>Rotation Gates</h3>
+        <label>Rx(θ):
+        <input id="rx-angle" type="number" value="45" min="-360" max="360">
+        <button class="control-btn" data-gate="Rx">Apply Rx</button>
+        </label>
+        <label>Ry(θ):
+        <input id="ry-angle" type="number" value="45" min="-360" max="360">
+        <button class="control-btn" data-gate="Ry">Apply Ry</button>
+        </label>
+
+        <label>Rz(θ):
+        <input id="rz-angle" type="number" value="45" min="-360" max="360">
+        <button class="control-btn" data-gate="Rz">Apply Rz</button>
+        </label>
+        <hr>
+
+        <!-- DISPLAY STATE ANGLES -->
+        <div class="state-display">
+          <p>α (re): <span id="alpha-re-val"></span></p>
+          <p>α (im): <span id="alpha-im-val"></span></p>
+          <p>β (re): <span id="beta-re-val"></span></p>
+          <p>β (im): <span id="beta-im-val"></span></p>
+          <p>θ: <span id="theta-value">0°</span></p>
+          <p>φ: <span id="phi-value">0°</span></p>
+        </div>
+
+        <label>α (real):<input id="alpha-real" type="number" value="1"  max="1" step="0.1"></label>
+        <label>α (imag):<input id="alpha-imag" type="number" value="0" max="1" step="0.1"></label>
+        <label>β (real):<input id="beta-real" type="number" value="0" max="1" step="0.1"></label>
+        <label>β (imag):<input id="beta-imag" type="number" value="0" max="1" step="0.1"></label>
+
+        <label>Theta (θ):</label>
+        <input id="theta-slider" type="range" min="0" max="180" value="0">
+
+        
+        <label>Phi (φ):</label>
+        <input id="phi-slider" type="range" min="0" max="360" value="0">
+        
+        
+
+        <hr>
+
+        <!--Gate Sequences-->
+        <h2>Gate Sequences</h2>
+        <div id="circuit-display" contenteditable="true" style="min-height: 80px; border: 1px solid #ccc; padding: 5px;">
+          (empty)
+        </div>
+
+        <button id="reset" class="control-btn" style="background:#900; color:white;">
+          Reset Circuit
+        </button>
+
+        <button id="run-circuit" class="control-btn" style="background:#063; color:white;">
+          Run Circuit
+        </button>
+
+      </aside>
+
+      <!--3D CANVAS, this is where our interactive sphere is. -->
+      <canvas id="bg"></canvas>
+    </div>
+
+  </body>
+</html>
