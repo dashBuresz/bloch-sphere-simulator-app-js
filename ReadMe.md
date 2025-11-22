@@ -23,10 +23,15 @@ Requirements:
 
 
 Check if you meet requirements by running the `node -v` and `npm -v` commands respectively. 
-- if either command gives you a version number, you have the necessary extensions installed and you're ready to go. 
+- if either command gives you a version number, you have the necessary extensions installed and you're ready to go.
 
 The Setup: 
 - run `npm install three` to install the three.js 3D library. (these are files are ignored inside the .gitignore file, because it's an external library and our repository doesn't need to track it. This is why you have to install it before starting development. )
 - run `npm run dev` to start hosting locally, 
     - in the terminal you'll get a `http://localhost:yourportnumber/` link, 
     - use `ctrl+left_click` to open it and view the result of your code. **(DO NOT USE LIVE SERVER)**
+
+## TODOs
+- [ ] determine the issue with quantum gates. 
+- [ ] fix issues and or refactor gates **from 3×3** rotations **to** actual **2×2** complex unitaries on **(α, β)**
+- [ ] figure out how to make this project able to be installed as a standalone browser app, that can be installed on a pc with just a browser and no development enviroment. 
