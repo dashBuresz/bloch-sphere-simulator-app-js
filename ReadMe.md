@@ -1,7 +1,7 @@
 # **How To Set Up Development Enviroment (not needed because project already tracks necessary files)**
 ## Setting up the Enviroment and running the first time. 
 To run the program, you'll need the following things: 
-- change into the root directory: cd Bloch-Sphere-Simulator-App
+- change into the root directory: `cd Bloch-Sphere-Simulator-App`
 - install vitejs by running the following commands: 
     - `npm innit @vitejs/app`
     - select `vanilla` using the arrows and press enter
@@ -34,4 +34,5 @@ The Setup:
 ## TODOs
 - [ ] determine the issue with quantum gates. 
 - [ ] fix issues and or refactor gates **from 3×3** rotations **to** actual **2×2** complex unitaries on **(α, β)**
-- [ ] figure out how to make this project able to be installed as a standalone browser app, that can be installed on a pc with just a browser and no development enviroment. 
+- [ ] figure out how to make this project able to be installed as a standalone browser app, that can be installed on a pc with just a browser and no development enviroment.
+- [ ] refactor this TODO list so each point references an issue.
